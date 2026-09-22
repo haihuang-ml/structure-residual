@@ -107,7 +107,7 @@ There are six arguments that control **CC** behavior:
 Where `<mode>` can be one of:
 - `none`: no CC loss applied
 - `mse`: MSE between adjecent hidden states (named *CC* in the paper)
-- `cosine`: Cosine distance between adjecent hidden states (named *Cosine* in the paper)
+- `cosine`: 1 - *cosine distance* between adjecent hidden states (named *Cosine* in the paper)
 - `l2`: L2 regularization on each hidden state (named *Scale* in the paper)
 - `norm`: MSE normalized by the L2 norms sum of adjecent hidden states (named *Normalized* in the paper)
 - `mse2`: a two-predecessor Laplacian-residual penalty (named *CC-2* in the paper)
