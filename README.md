@@ -1,6 +1,6 @@
 # Structure-Residual Inductive Biases For Language Model Pretraining
 
-This is the official implementation of the paper *Structure-Residual Inductive Biases For Language Model Pretraining*.
+This is the official implementation of the paper *"Structure-Residual Inductive Biases For Language Model Pretraining"*.
 
 # Setup
 
@@ -26,8 +26,7 @@ python preprocess.py \
   --val_tokens 10000000 \
   --add_eos true \
   --dtype uint16 \
-  --streaming true \
-  --deduplicate true \
+  --streaming true
 ```
 
 ### Training
@@ -81,8 +80,6 @@ For the full list of arguments run `python train.py --help`.
 
 ### Boundary Bottleneck Concept
 
-<img src="images/bbc_attention.svg" width="300">
-
 There are three arguments that control **BBC** behavior:
 
 - `--bottleneck_concept_k <int>`: size of the bottleneck segment.
@@ -97,8 +94,6 @@ Where `<mode>` can be one of:
 - `random_sparse`: each token gets the same attention budget as boundary mode, but assigned to deterministic random causal positions.
 
 ### Continuous Concept
-
-<img src="images/cc_energy.svg" width="300">
 
 There are six arguments that control **CC** behavior:
 
