@@ -1,0 +1,86 @@
+{
+  "vanilla": {
+    "dirichlet_energy": {
+      "mean": 12729944.516601562,
+      "standard_error": 11656.071465255449,
+      "count": 1024
+    },
+    "normalized_dirichlet_energy": {
+      "mean": 0.8785087594296783,
+      "standard_error": 0.0012085134326590143,
+      "count": 1024
+    },
+    "hidden_energy": {
+      "mean": 14511178.107421875,
+      "standard_error": 19171.392365563705,
+      "count": 1024
+    },
+    "residual_m51": {
+      "mean": 0.5280657653929666,
+      "standard_error": 0.0006261502126675676,
+      "count": 1024
+    },
+    "residual_m102": {
+      "mean": 0.4680545266601257,
+      "standard_error": 0.0005338902795773217,
+      "count": 1024
+    },
+    "residual_m205": {
+      "mean": 0.3806519461213611,
+      "standard_error": 0.0004610580675767827,
+      "count": 1024
+    },
+    "residual_m307": {
+      "mean": 0.3141847080551088,
+      "standard_error": 0.000413619519684623,
+      "count": 1024
+    },
+    "residual_m512": {
+      "mean": 0.2080234275199473,
+      "standard_error": 0.00031287966226047103,
+      "count": 1024
+    }
+  },
+  "cc": {
+    "dirichlet_energy": {
+      "mean": 3485491.9731445312,
+      "standard_error": 4341.38574153675,
+      "count": 1024
+    },
+    "normalized_dirichlet_energy": {
+      "mean": 0.6454908312880434,
+      "standard_error": 0.0011367827103240474,
+      "count": 1024
+    },
+    "hidden_energy": {
+      "mean": 5409950.602050781,
+      "standard_error": 8031.707986232157,
+      "count": 1024
+    },
+    "residual_m51": {
+      "mean": 0.4129940991406329,
+      "standard_error": 0.0005889274238530131,
+      "count": 1024
+    },
+    "residual_m102": {
+      "mean": 0.3594323369907215,
+      "standard_error": 0.0005002925709911494,
+      "count": 1024
+    },
+    "residual_m205": {
+      "mean": 0.2853284855664242,
+      "standard_error": 0.00043676457653247787,
+      "count": 1024
+    },
+    "residual_m307": {
+      "mean": 0.2317082623776514,
+      "standard_error": 0.00039225942170539315,
+      "count": 1024
+    },
+    "residual_m512": {
+      "mean": 0.1502119342039805,
+      "standard_error": 0.00029287419135911956,
+      "count": 1024
+    }
+  }
+}

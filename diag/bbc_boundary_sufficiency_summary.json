@@ -1,0 +1,56 @@
+{
+  "vanilla": {
+    "full_nll": {
+      "mean": 4.144801517715678,
+      "standard_error": 0.01102540937628905,
+      "count": 1024
+    },
+    "boundary_preserved_nll": {
+      "mean": 6.61203771084547,
+      "standard_error": 0.00829273598845325,
+      "count": 1024
+    },
+    "delta_boundary": {
+      "mean": 2.467236193129793,
+      "standard_error": 0.008014076520122952,
+      "count": 1024
+    },
+    "boundary_removed_nll": {
+      "mean": 4.665226362645626,
+      "standard_error": 0.010417803089755961,
+      "count": 1024
+    },
+    "delta_remove": {
+      "mean": 0.5204248449299484,
+      "standard_error": 0.001893645998420168,
+      "count": 1024
+    }
+  },
+  "bbc": {
+    "full_nll": {
+      "mean": 4.100828474154696,
+      "standard_error": 0.011057431335744182,
+      "count": 1024
+    },
+    "boundary_preserved_nll": {
+      "mean": 6.096661186777055,
+      "standard_error": 0.007287642581692996,
+      "count": 1024
+    },
+    "delta_boundary": {
+      "mean": 1.9958327126223594,
+      "standard_error": 0.00791560109954635,
+      "count": 1024
+    },
+    "boundary_removed_nll": {
+      "mean": 4.564965385245159,
+      "standard_error": 0.010427334378055203,
+      "count": 1024
+    },
+    "delta_remove": {
+      "mean": 0.4641369110904634,
+      "standard_error": 0.001750014549248444,
+      "count": 1024
+    }
+  }
+}
