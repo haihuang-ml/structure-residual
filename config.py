@@ -55,7 +55,7 @@ class TrainConfig:
     torch_compile: bool = False
 
     wandb: bool = True
-    wandb_project: str = "boundary-bottleneck"
+    wandb_project: str = "structure-residual"
     wandb_run_name: str | None = None
     wandb_group: str | None = None
     resume_from: str | None = None
