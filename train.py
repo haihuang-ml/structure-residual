@@ -595,7 +595,7 @@ def main() -> None:
     scheduler = get_lr_scheduler(config, optimizer, max_steps, tokens_per_step)
     start_step, trained_tokens = maybe_resume(config.resume_from, model, optimizer, scheduler, device)
 
-    scaler = torch.cuda.amp.GradScaler(enabled=config.fp16 and device.type == "cuda")
+    scaler = torch.amp.GradScaler(enabled=config.fp16 and device.type == "cuda")
     if is_main(rank):
         output_dir.mkdir(parents=True, exist_ok=True)
         with (output_dir / "config.json").open("w") as f:
