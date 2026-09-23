@@ -53,7 +53,7 @@ def normalized_bottleneck_mode(config: TrainConfig) -> str | None:
 def default_wandb_run_name(config: TrainConfig) -> str:
     model_names = {
         "gpt2-small": "g2s",
-        "gpt2-medium-ish": "g2m",
+        "gpt2-medium": "g2m",
         "tiny": "tiny",
         "custom": "custom",
     }

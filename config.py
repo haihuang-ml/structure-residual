@@ -67,7 +67,7 @@ class TrainConfig:
 MODEL_SIZES: dict[str, dict[str, int]] = {
     "tiny": {"n_layer": 4, "n_head": 4, "n_embd": 256},
     "gpt2-small": {"n_layer": 12, "n_head": 12, "n_embd": 768},
-    "gpt2-medium-ish": {"n_layer": 24, "n_head": 16, "n_embd": 1024},
+    "gpt2-medium": {"n_layer": 24, "n_head": 16, "n_embd": 1024},
 }
 
 
