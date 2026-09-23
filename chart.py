@@ -227,12 +227,12 @@ BBC_IMPROVEMENT_MEDIUM = {
 
 
 _IMPROVEMENT_20B_VALUES = {
-    "BBC": [1.04, 0.90, 0.98, 1.09, 0.93, 1.01, 1.01, 1.00, 0.86, 0.88,
-            0.95, 0.96, 1.04, 1.06, 1.06, 1.09, 1.13, 1.13, 1.13, 1.14],
-    "BBC+CC": [1.06, 0.94, 1.01, 0.97, 0.80, 0.85, 0.88, 0.97, 0.86, 0.90,
-               0.95, 0.98, 1.07, 1.10, 1.09, 1.13, 1.15, 1.18, 1.21, 1.20],
-    "BBC+CC Adapt": [1.11, 0.99, 1.09, 1.10, 1.01, 1.08, 1.11, 1.13, 1.01, 1.05,
-                      1.09, 1.08, 1.14, 1.20, 1.16, 1.23, 1.23, 1.25, 1.29, 1.28],
+    "BBC": [1.03, 0.90, 0.97, 1.08, 0.92, 1.00, 1.00, 0.99, 0.86, 0.87,
+            0.95, 0.95, 1.03, 1.04, 1.04, 1.08, 1.12, 1.11, 1.11, 1.12],
+    "BBC+CC": [1.05, 0.94, 1.00, 0.96, 0.79, 0.84, 0.87, 0.96, 0.85, 0.89,
+               0.94, 0.97, 1.06, 1.09, 1.08, 1.12, 1.14, 1.17, 1.19, 1.19],
+    "BBC+CC Adapt": [1.10, 0.98, 1.08, 1.09, 1.00, 1.07, 1.10, 1.11, 1.00, 1.04,
+                      1.08, 1.07, 1.12, 1.18, 1.15, 1.22, 1.21, 1.24, 1.27, 1.26],
 }
 IMPROVEMENT_20B = {
     name: {
@@ -379,7 +379,7 @@ def plot_20b_improvement(
 
     if token_budgets is not None:
         tick_budgets = [budget for budget in token_budgets if budget in {1, 5, 10, 15, 20}]
-        plt.xticks(tick_budgets, [f"{budget:g}" for budget in tick_budgets])
+        plt.xticks(tick_budgets, [f"{budget:g}B" for budget in tick_budgets])
     plt.xlabel(x_label)
     plt.ylabel(y_label)
     plt.legend(
@@ -611,6 +611,6 @@ if __name__ == "__main__":
     # )
     # plot_abl_100m("images/abl_100m.pdf", ABL_100M_NLL, None, "NLL", y_min=4.0)
     # plot_abl_300m("images/abl_300m.pdf", ABL_300M_NLL, None, "NLL", y_min=3.65, y_max=3.8)
-    # plot_20b_improvement("images/20b_improvement.pdf", IMPROVEMENT_20B, None, "Improvement (%)")
-    plot_zero_position("images/zero_position.pdf", ZERO_POSITION_CONTRAST)
+    plot_20b_improvement("images/20b_improvement.pdf", IMPROVEMENT_20B, None, "Improvement (%)")
+    # plot_zero_position("images/zero_position.pdf", ZERO_POSITION_CONTRAST)
     # plot_spectral_residual("images/cc_spectral_residual.pdf", SPECTRAL_RESIDUAL_100M)
