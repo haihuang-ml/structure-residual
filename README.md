@@ -51,6 +51,7 @@ python train.py \
   --weight_decay 0.1 \
   --torch_compile true \
   --seed 82 \
+  --wandb true \
   --bf16 true \
   --eval_tokens_final 10000000 \
 ```
