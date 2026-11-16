@@ -142,6 +142,7 @@ def parse_args() -> TrainConfig:
         "continuous_concept_lambda_sg",
         "continuous_concept_dropout",
         "continuous_concept_adaptive_dropout",
+        "change_rope_rotary_pct"
     }
     for f in fields(TrainConfig):
         default = getattr(defaults, f.name)
