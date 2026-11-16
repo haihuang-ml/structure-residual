@@ -76,6 +76,8 @@ For `bbc+cc` training add the following arguments:
 ```
 
 To run in multi-GPU mode, prefix the command with `torchrun --nproc_per_node=<num_gpus>` and adjust the batch size accordingly.
+To reproduce the `Pythia` 1B experiments recreate the dataset with `--tokenizer_name EleutherAI/pythia-410m` then run the following commands,
+replacing `gpt2-medium` with `pythia-410m`.
 
 For the full list of arguments run `python train.py --help`.
 
