@@ -36,6 +36,9 @@ class TrainConfig:
     continuous_concept_adaptive_dropout: float | None = None
     continuous_concept_adaptive_dropout_history: int = 32
 
+    change_rope_layers: str | None = None
+    change_rope_rotary_pct: float | None = None
+
     learning_rate: float = 6e-4
     min_learning_rate: float = 6e-5
     lr_scheduler: str = "cosine"

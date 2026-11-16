@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 from collections import deque
 from dataclasses import dataclass
 
@@ -7,7 +8,8 @@ import torch
 import torch.distributed as dist
 import torch.nn as nn
 import torch.nn.functional as F
-from transformers import GPT2Config, GPT2LMHeadModel
+from transformers import GPT2Config, GPT2LMHeadModel, GPTNeoXConfig, GPTNeoXForCausalLM
+from transformers.models.gpt_neox.modeling_gpt_neox import GPTNeoXRotaryEmbedding
 
 from config import TrainConfig, model_dims
 
@@ -43,10 +45,14 @@ def normalize_bottleneck_mode(mode: str | None) -> str | None:
     raise ValueError("bottleneck_mode must be None, boundary, sliding_window, random_boundary, or random_sparse")
 
 
-def gpt2_blocks(transformer: GPT2LMHeadModel) -> nn.ModuleList:
+def model_blocks(transformer: GPT2LMHeadModel | GPTNeoXForCausalLM) -> nn.ModuleList:
+    if isinstance(transformer, GPTNeoXForCausalLM):
+        return transformer.gpt_neox.layers
+
     blocks = getattr(getattr(transformer, "transformer", None), "h", None)
     if blocks is None:
         raise RuntimeError("Could not find GPT-2 transformer blocks")
+
     return blocks
 
 
@@ -84,7 +90,7 @@ def parse_bottleneck_layers(spec: str, n_layer: int) -> list[int]:
 def patch_gpt2_attention_bias_layers(transformer: GPT2LMHeadModel, allow: torch.Tensor, layers: list[int],
                                      label: str) -> None:
     bias = allow[None, None, :, :]
-    blocks = gpt2_blocks(transformer)
+    blocks = model_blocks(transformer)
     patched = 0
     for layer in layers:
         attn = getattr(blocks[layer], "attn", None)
@@ -172,8 +178,50 @@ def build_bottleneck_allow_mask(
     raise RuntimeError(f"Unhandled bottleneck_mode: {mode}")
 
 
-def patch_gpt2_bottleneck_attention_bias(
-        transformer: GPT2LMHeadModel,
+def add_rope_changing_hook(transformer: GPTNeoXForCausalLM, config: TrainConfig) -> None:
+    assert isinstance(transformer, GPTNeoXForCausalLM), 'Currently only GPTNeoX is supported'
+
+    layers = transformer.gpt_neox.layers
+
+    if not config.change_rope_layers:
+        return
+
+    rope_layers = config.change_rope_layers
+    rope_layers = parse_layer_spec(rope_layers, len(layers), 'change_rope_layers', 'rope_layers')
+
+    changed_model_config = copy.copy(transformer.config)
+    changed_model_config.partial_rotary_factor = config.change_rope_rotary_pct
+    changed_model_config.rotary_pct = config.change_rope_rotary_pct
+
+    rope_emb = GPTNeoXRotaryEmbedding(changed_model_config)
+
+    def change_rope_hook(_, args, kwargs):
+        position_ids = kwargs['position_ids']
+        hidden_state = args[0]
+        kwargs['position_embeddings'] = rope_emb(hidden_state, position_ids)
+        return args, kwargs
+
+    for layer in rope_layers:
+        layers[layer].register_forward_pre_hook(change_rope_hook, with_kwargs=True)
+
+
+
+def add_bottleneck_hook(transformer: GPTNeoXForCausalLM, allow: torch.Tensor, layers: list[int]) -> None:
+    min_dtype = torch.finfo(transformer.dtype).min
+
+    bottleneck_mask = allow[None, None, :, :]
+    bottleneck_mask = torch.where(bottleneck_mask, 0, min_dtype)
+
+    def bottleneck_attention_hook(_, args, kwargs):
+        kwargs["attention_mask"] = bottleneck_mask.to(transformer.device)
+        return args, kwargs
+
+    for layer in layers:
+        transformer.gpt_neox.layers[layer].register_forward_pre_hook(bottleneck_attention_hook, with_kwargs=True)
+
+
+def patch_bottleneck_attention(
+        transformer: GPT2LMHeadModel | GPTNeoXForCausalLM,
         seq_len: int,
         concept_k: int,
         mode: str | None,
@@ -183,15 +231,20 @@ def patch_gpt2_bottleneck_attention_bias(
     device = next(transformer.parameters()).device
     allow = build_bottleneck_allow_mask(seq_len, concept_k, device=device, mode=mode, seed=seed)
     density = float(allow.float().mean().item())
-    layers = parse_bottleneck_layers(bottleneck_layers, len(gpt2_blocks(transformer)))
-    patch_gpt2_attention_bias_layers(transformer, allow, layers, f"{mode} bottleneck attention")
+    layers = parse_bottleneck_layers(bottleneck_layers, len(model_blocks(transformer)))
+
+    if isinstance(transformer, GPT2LMHeadModel):
+        patch_gpt2_attention_bias_layers(transformer, allow, layers, f"{mode} bottleneck attention")
+    else:
+        add_bottleneck_hook(transformer, allow, layers)
+
     return density
 
 
 class VanillaGPT2LM(nn.Module):
     def __init__(
             self,
-            transformer: GPT2LMHeadModel,
+            transformer: GPT2LMHeadModel | GPTNeoXForCausalLM,
             concept_k: int = 8,
             continuous_concept_mode: str = "none",
             continuous_concept_lambda: float = 0.01,
@@ -289,7 +342,7 @@ class VanillaGPT2LM(nn.Module):
 class BottleneckGPT2LM(nn.Module):
     def __init__(
             self,
-            transformer: GPT2LMHeadModel,
+            transformer: GPT2LMHeadModel | GPTNeoXForCausalLM,
             bottleneck_mode: str,
             concept_k: int = 8,
             attention_allowed_density: float = 0.0,
@@ -637,20 +690,35 @@ def build_model(
         required_positions = train_config.n_positions or train_config.seq_len
         if transformer.config.n_positions < required_positions:
             raise ValueError("Pretrained GPT-2 positional embeddings are too short for this configuration")
-    else:
+    elif train_config.model_size.lower().startswith('gpt2'):
         transformer = GPT2LMHeadModel(build_gpt2_config(train_config, vocab_size, eos_token_id))
+    elif train_config.model_size.lower().startswith('pythia'):
+        model_config = GPTNeoXConfig.from_pretrained(f'EleutherAI/{train_config.model_size}')
+        model_config._attn_implementation = 'eager'
+        transformer = GPTNeoXForCausalLM(model_config)
+    else:
+        raise ValueError(f'Unrecognized model {train_config.model_size}')
 
     if bottleneck_mode is not None:
-        if transformer.config.n_positions < train_config.seq_len:
-            raise ValueError("GPT-2 positional length is shorter than sequence length")
-        attention_allowed_density = patch_gpt2_bottleneck_attention_bias(
+        is_gpt2 = train_config.model_size.lower().startswith('gpt2')
+        max_position_embeddings = transformer.config.n_positions if is_gpt2 else transformer.config.max_position_embeddings
+
+        if max_position_embeddings < train_config.seq_len:
+            raise ValueError("Model positional length is shorter than sequence length")
+
+        attention_allowed_density = patch_bottleneck_attention(
             transformer,
-            transformer.config.n_positions,
+            train_config.seq_len,
             train_config.bottleneck_concept_k,
             bottleneck_mode,
             train_config.bottleneck_layers,
             train_config.seed,
         )
+
+        if train_config.change_rope_layers is not None:
+            assert not isinstance(transformer, GPT2LMHeadModel), 'GPT2 models have no RoPE, set change_rope_layers = None'
+            add_rope_changing_hook(transformer, train_config)
+
         return BottleneckGPT2LM(
             transformer=transformer,
             concept_k=train_config.bottleneck_concept_k,
