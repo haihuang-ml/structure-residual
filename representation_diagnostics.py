@@ -16,7 +16,7 @@ import torch.nn.functional as F
 from tqdm.auto import tqdm
 
 from config import TrainConfig
-from model import build_model, gpt2_blocks, parse_bottleneck_layers, select_continuous_concept_hidden_state
+from model import build_model, model_blocks, parse_bottleneck_layers, select_continuous_concept_hidden_state
 from train import make_loader, move_batch
 
 
@@ -146,7 +146,7 @@ def replace_completed_segment_states(
 
 def with_block_output_intervention(model, block_index: int, intervention: Callable[[torch.Tensor], torch.Tensor]):
     """Attach a temporary hook that changes a GPT-2 block output before its successor."""
-    blocks = gpt2_blocks(model.transformer)
+    blocks = model_blocks(model.transformer)
     if not 0 <= block_index < len(blocks):
         raise ValueError(f"BBC block index {block_index} is out of range for {len(blocks)} layers")
 
@@ -159,7 +159,7 @@ def with_block_output_intervention(model, block_index: int, intervention: Callab
 
 
 def resolve_bbc_block_for_model(layer: str | None, config: TrainConfig, model) -> int:
-    n_layers = len(gpt2_blocks(model.transformer))
+    n_layers = len(model_blocks(model.transformer))
     bottleneck_layers = parse_bottleneck_layers(config.bottleneck_layers, n_layers)
     if layer is not None:
         layers = parse_bottleneck_layers(layer, n_layers)
@@ -345,7 +345,7 @@ def run_bbc_diagnostic(args) -> None:
     if int(vanilla_meta["vocab_size"]) != int(bbc_meta["vocab_size"]):
         raise ValueError("Checkpoint vocabularies differ")
     block_index = resolve_bbc_block_for_model(args.layer, bbc_config, bbc)
-    if block_index >= len(gpt2_blocks(vanilla.transformer)):
+    if block_index >= len(model_blocks(vanilla.transformer)):
         raise ValueError("Vanilla checkpoint does not have the requested BBC layer")
     loader = make_loader(
         Path(args.data_dir) / "val.bin",
@@ -452,7 +452,7 @@ def run_cc_diagnostic(args) -> None:
     if vanilla_config.seq_len != cc_config.seq_len or int(vanilla_meta["vocab_size"]) != int(cc_meta["vocab_size"]):
         raise ValueError("Checkpoint sequence lengths or vocabularies differ")
     layer = args.layer or cc_config.continuous_concept_layer
-    hidden_state_count = len(gpt2_blocks(cc.transformer)) + 1
+    hidden_state_count = len(model_blocks(cc.transformer)) + 1
     if continuous_hidden_state_index(layer, hidden_state_count) != continuous_hidden_state_index(
         cc_config.continuous_concept_layer, hidden_state_count
     ):
