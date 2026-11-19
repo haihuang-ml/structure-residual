@@ -1,6 +1,6 @@
 # Structure-Residual Inductive Biases For Language Model Pretraining
 
-This is the official implementation of the paper *"Structure-Residual Inductive Biases For Language Model Pretraining"*.
+This is the official implementation of the paper [*"Structure-Residual Inductive Biases For Language Model Pretraining"*](https://arxiv.org/abs/2611.23197).
 
 # Setup
 
